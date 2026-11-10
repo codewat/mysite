@@ -23,6 +23,7 @@ import { filterProjects } from './utils/filterProjects';
 import { Navbar } from './components/Navbar';
 import { ProjectCard } from './components/ProjectCard';
 import { ProjectModal } from './components/ProjectModal';
+import ShapeGrid from './components/ShapeGrid';
 
 const PLATFORM_FILTERS: Array<HostingPlatform | 'All'> = [
   'All',
@@ -76,14 +77,39 @@ export function App() {
   return (
     <div
       id="top"
-      className={`min-h-screen transition-colors ${
+      className={`relative min-h-screen transition-colors ${
         darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
       }`}
     >
+      {/* Interactive Tilted ShapeGrid Background */}
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+        <ShapeGrid
+          shape="tile"
+          direction="up"
+          lineColor={darkMode ? '#2a2734' : '#cbd5e1'}
+          hoverColor="#06b6d4"
+          hoverFillColor="#0c7d57"
+          fillOpacity={0.15}
+          cellSize={40}
+          speed={0.5}
+          tiltX={60}
+          tiltY={40}
+          rainbow={false}
+          lineWidth={2.25}
+          radius={1.3}
+          trail={1.5}
+          glow={0.2}
+          twinkle={0.2}
+          fade={1}
+          clickCascade
+          intro
+        />
+      </div>
+
       <Navbar darkMode={darkMode} onToggleTheme={() => setDarkMode((d) => !d)} />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-slate-800/40 bg-grid-pattern">
+      <section className="relative z-10 overflow-hidden border-b border-slate-800/40">
         <div className="pointer-events-none absolute -top-24 left-1/2 h-96 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-sky-500/20 via-indigo-500/15 to-amber-500/15 blur-3xl" />
 
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-22">
@@ -274,7 +300,7 @@ export function App() {
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <section id="projects" className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="font-mono text-xs font-semibold tracking-wider text-sky-400 uppercase">
@@ -397,7 +423,7 @@ export function App() {
       {/* Skills & Architecture Section */}
       <section
         id="skills"
-        className={`border-y py-16 ${
+        className={`relative z-10 border-y py-16 backdrop-blur-[2px] ${
           darkMode
             ? 'border-slate-800/70 bg-slate-900/35'
             : 'border-slate-200 bg-slate-100/70'
@@ -454,7 +480,7 @@ export function App() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <section id="contact" className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div
           className={`grid gap-8 rounded-3xl border p-6 sm:p-10 lg:grid-cols-12 ${
             darkMode
@@ -586,7 +612,7 @@ export function App() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/40 py-8 text-center text-xs text-slate-500">
+      <footer className="relative z-10 border-t border-slate-800/40 py-8 text-center text-xs text-slate-500">
         <p>
           &copy; {new Date().getFullYear()} {PROFILE.fullName} ({PROFILE.brandName}). Built
           with React, TypeScript &amp; Tailwind CSS.
