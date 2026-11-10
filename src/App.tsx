@@ -187,6 +187,20 @@ export function App() {
                   </span>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => setSelectedProject(featuredProject)}
+                  className="group relative mt-4 block w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-left shadow-lg"
+                >
+                  <div className="aspect-[16/10] w-full overflow-hidden">
+                    <img
+                      src={featuredProject.previewImage}
+                      alt={`${featuredProject.title} live UI preview`}
+                      className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                </button>
+
                 <h2
                   className={`mt-4 text-xl font-bold ${
                     darkMode ? 'text-white' : 'text-slate-950'

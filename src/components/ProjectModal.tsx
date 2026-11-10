@@ -4,6 +4,8 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Image as ImageIcon,
+  Maximize2,
   Monitor,
   X,
 } from 'lucide-react';
@@ -16,7 +18,7 @@ interface ProjectModalProps {
 }
 
 export function ProjectModal({ project, onClose }: ProjectModalProps) {
-  const [tab, setTab] = useState<'overview' | 'live'>('overview');
+  const [tab, setTab] = useState<'overview' | 'screenshot' | 'live'>('overview');
 
   useEffect(() => {
     setTab('overview');
@@ -40,7 +42,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl"
       >
         {/* Header */}
         <div
@@ -76,6 +78,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
             <button
               type="button"
               onClick={onClose}
+              aria-label="Close modal"
               className="rounded-xl bg-slate-950/60 p-2 text-slate-300 hover:bg-slate-800 hover:text-white"
             >
               <X className="h-4 w-4" />
@@ -84,8 +87,8 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
         </div>
 
         {/* Mode Tabs */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 px-5 py-2.5">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/60 px-5 py-2.5">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setTab('overview')}
@@ -95,7 +98,19 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Overview &amp; Highlights
+              Overview &amp; Preview
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab('screenshot')}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+                tab === 'screenshot'
+                  ? 'bg-slate-800 text-sky-300'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              Full Screenshot
             </button>
             <button
               type="button"
@@ -107,7 +122,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
               }`}
             >
               <Monitor className="h-3.5 w-3.5" />
-              Live Frame Preview
+              Live Interactive
             </button>
           </div>
 
@@ -117,58 +132,111 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
         </div>
 
         {/* Body */}
-        {tab === 'overview' ? (
-          <div className="flex-1 space-y-5 overflow-y-auto p-6">
-            <div>
-              <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                About This App
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-200">
-                {project.description}
-              </p>
-              {project.coldStartNote && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-2 text-xs text-fuchsia-200">
-                  <Clock className="h-4 w-4 shrink-0" />
-                  {project.coldStartNote}
+        {tab === 'overview' && (
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Screenshot Frame */}
+              <div className="lg:col-span-6">
+                <button
+                  type="button"
+                  onClick={() => setTab('screenshot')}
+                  className="group relative block w-full overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-950 text-left shadow-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-3 py-2 text-[11px] text-slate-400">
+                    <span className="truncate font-mono">{project.domainLabel}</span>
+                    <span className="inline-flex items-center gap-1 font-semibold text-sky-400">
+                      <Maximize2 className="h-3 w-3" /> Zoom
+                    </span>
+                  </div>
+                  <div className="aspect-[16/10] w-full overflow-hidden">
+                    <img
+                      src={project.previewImage}
+                      alt={`${project.title} screenshot`}
+                      className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
+                    />
+                  </div>
+                </button>
+              </div>
+
+              {/* Details */}
+              <div className="space-y-5 lg:col-span-6">
+                <div>
+                  <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                    About This App
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                    {project.description}
+                  </p>
+                  {project.coldStartNote && (
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-2 text-xs text-fuchsia-200">
+                      <Clock className="h-4 w-4 shrink-0" />
+                      {project.coldStartNote}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div>
-              <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                Key Features
-              </h3>
-              <ul className="mt-2.5 space-y-2">
-                {project.highlights.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2.5 text-sm text-slate-200"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <div>
+                  <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                    Key Features
+                  </h3>
+                  <ul className="mt-2.5 space-y-2">
+                    {project.highlights.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2.5 text-sm text-slate-200"
+                      >
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-            <div>
-              <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                Tech &amp; Infrastructure
-              </h3>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {project.techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200"
-                  >
-                    {tech}
-                  </span>
-                ))}
+                <div>
+                  <h3 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                    Tech &amp; Infrastructure
+                  </h3>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {project.techStack.map((tech) => (
+                      <span
+                        key={tech}
+                        className="rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="flex h-[65vh] flex-col bg-slate-950">
+        )}
+
+        {tab === 'screenshot' && (
+          <div className="flex-1 overflow-y-auto bg-slate-950 p-4 sm:p-6">
+            <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 text-xs text-slate-400">
+                <span className="truncate font-mono">{project.url}</span>
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1 font-semibold text-sky-400 hover:underline"
+                >
+                  Open Live Site <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+              <img
+                src={project.previewImage}
+                alt={`${project.title} full UI screenshot`}
+                className="w-full object-contain"
+              />
+            </div>
+          </div>
+        )}
+
+        {tab === 'live' && (
+          <div className="flex h-[68vh] flex-col bg-slate-950">
             <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-xs text-slate-400">
               <span>
                 If a host blocks embedded previews or takes a moment to wake up, open it

@@ -28,7 +28,11 @@ describe('Portfolio Catalog & Filtering', () => {
       expect(p.url.startsWith('https://')).toBe(true);
       expect(p.title.length).toBeGreaterThan(2);
       expect(p.highlights.length).toBeGreaterThanOrEqual(2);
+      expect(p.previewImage).toMatch(/^\/previews\/[a-z0-9-]+\.png$/);
     }
+
+    const uniquePreviews = new Set(PROJECTS.map((p) => p.previewImage));
+    expect(uniquePreviews.size).toBe(PROJECTS.length);
   });
 
   it('filters projects accurately by platform, category, and search query', () => {

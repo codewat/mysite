@@ -16,6 +16,7 @@ export interface ProjectItem {
   domainLabel: string;
   platform: HostingPlatform;
   category: ProjectCategory;
+  previewImage: string;
   featured?: boolean;
   coldStartNote?: string;
   highlights: string[];
@@ -73,6 +74,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'songbook-70d57.web.app',
     platform: 'Firebase',
     category: 'Faith & Ministry',
+    previewImage: '/previews/worshipdeck-songbook.png',
     featured: true,
     highlights: [
       'Default 1. Chords and 2. Lyrics folders plus custom folders & Sunday setlist playlists',
@@ -95,6 +97,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'bible-app-five-umber.vercel.app',
     platform: 'Vercel',
     category: 'Faith & Ministry',
+    previewImage: '/previews/catholic-holy-bible.png',
     highlights: [
       'Full 73-book Catholic Canon in Douay-Rheims Version',
       'Guided Holy Rosary, Divine Mercy, and Daily Catholic Prayers',
@@ -115,6 +118,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'massage-clinic.vercel.app',
     platform: 'Vercel',
     category: 'Business & Wellness',
+    previewImage: '/previews/charlene-massage-clinic.png',
     highlights: [
       'Clean service showcase for personalized therapeutic massage sessions',
       'Streamlined clinic appointment & inquiry flow for clients',
@@ -127,19 +131,20 @@ export const PROJECTS: ProjectItem[] = [
   },
   {
     id: 'kara-ok',
-    title: 'Kara-OK',
-    subtitle: 'Interactive Karaoke Web Application',
+    title: 'Kara-OK (Party Karaoke)',
+    subtitle: 'Dual-Phone Screen & Remote Karaoke System',
     description:
-      'A web-based karaoke and sing-along application built for quick song lookup, queue management, and group entertainment sessions.',
+      'Dual-phone karaoke web app hosted on Render: use Phone 1 as the TV/lyrics screen with room QR code and Phone 2 as a remote song search, queue reservation, and player controller.',
     url: 'https://kara-ok.onrender.com',
     domainLabel: 'kara-ok.onrender.com',
     platform: 'Render',
     category: 'Media & Fun',
+    previewImage: '/previews/kara-ok.png',
     coldStartNote: 'Hosted on Render free tier — first visit may take ~20 seconds to wake up.',
     highlights: [
-      'Full-stack web application hosted on Render cloud infrastructure',
-      'Designed for interactive sing-along queues and live entertainment',
-      'Responsive controls optimized for laptops, TVs, and mobile screens',
+      'Phone 1 Screen Mode: plays YouTube Karaoke video, displays lyrics & room QR code',
+      'Phone 2 Remote Control: auto-karaoke search, song queue reservations & favorites',
+      'Instant room code pairing over shared Wi-Fi for group sing-alongs',
     ],
     techStack: ['Full-Stack Web', 'Node.js / Web App', 'Render Cloud'],
     accentGradient: 'from-fuchsia-500/25 via-purple-500/10 to-slate-900',
@@ -156,6 +161,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'mangaapp-eta.vercel.app',
     platform: 'Vercel',
     category: 'Media & Fun',
+    previewImage: '/previews/mangaverse-reader.png',
     highlights: [
       'Smooth high-resolution vertical & page reader for Manga, Manhwa, and Manhua',
       'Library bookmarks, chapter reading history, and cross-device sync',
@@ -176,6 +182,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'workout-mocha-zeta.vercel.app',
     platform: 'Vercel',
     category: 'Health & Fitness',
+    previewImage: '/previews/workoutwork-timer.png',
     highlights: [
       'Customizable workout routines with clean exercise & set flow',
       'Built-in interval rest timer to keep gym pacing tight',
@@ -196,6 +203,7 @@ export const PROJECTS: ProjectItem[] = [
     domainLabel: 'babyshower-iota-lime.vercel.app',
     platform: 'Vercel',
     category: 'Events & Personal',
+    previewImage: '/previews/baby-shower-celebration.png',
     highlights: [
       'Bespoke invitation experience with warm visual storytelling',
       'Online guest RSVP workflow and event schedule details',
