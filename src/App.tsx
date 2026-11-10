@@ -23,7 +23,7 @@ import { filterProjects } from './utils/filterProjects';
 import { Navbar } from './components/Navbar';
 import { ProjectCard } from './components/ProjectCard';
 import { ProjectModal } from './components/ProjectModal';
-import ShapeGrid from './components/ShapeGrid';
+import FaultyTerminal from './components/FaultyTerminal';
 
 const PLATFORM_FILTERS: Array<HostingPlatform | 'All'> = [
   'All',
@@ -81,28 +81,32 @@ export function App() {
         darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
       }`}
     >
-      {/* Interactive Tilted ShapeGrid Background */}
+      {/* Interactive FaultyTerminal Background */}
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
-        <ShapeGrid
-          shape="tile"
-          direction="up"
-          lineColor={darkMode ? '#2a2734' : '#cbd5e1'}
-          hoverColor="#06b6d4"
-          hoverFillColor="#0c7d57"
-          fillOpacity={0.15}
-          cellSize={40}
-          speed={0.5}
-          tiltX={60}
-          tiltY={40}
-          rainbow={false}
-          lineWidth={2.25}
-          radius={1.3}
-          trail={1.5}
-          glow={0.2}
-          twinkle={0.2}
-          fade={1}
-          clickCascade
-          intro
+        <FaultyTerminal
+          tint="#095d4f"
+          glyphs="characters"
+          scale={3.8}
+          digitSize={1.1}
+          timeScale={0}
+          brightness={0.7}
+          glow={0.35}
+          persistence={0.14}
+          mouseStrength={0.1}
+          mouseGlow={0.05}
+          curvature={0}
+          vignette={0.44}
+          clickEffect="glitch"
+          scramble={0.2}
+          scanlineIntensity={0.15}
+          glitchAmount={1}
+          flickerAmount={0}
+          noiseAmp={1}
+          chromaticAberration={0}
+          mouseReact
+          pageLoadAnimation
+          pause={false}
+          lightMode={!darkMode}
         />
       </div>
 
