@@ -84,24 +84,24 @@ export function App() {
       {/* Interactive FaultyTerminal Background */}
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
         <FaultyTerminal
-          tint="#095d4f"
+          tint="#B8F5A8"
           glyphs="characters"
-          scale={3.8}
-          digitSize={1.1}
-          timeScale={0}
-          brightness={0.7}
-          glow={0.35}
-          persistence={0.14}
-          mouseStrength={0.1}
-          mouseGlow={0.05}
-          curvature={0}
-          vignette={0.44}
+          scale={4}
+          digitSize={2.45}
+          timeScale={0.15}
+          brightness={0.4}
+          glow={0.9}
+          persistence={0.06}
+          mouseStrength={0.5}
+          mouseGlow={1}
+          curvature={0.1}
+          vignette={0.17}
           clickEffect="glitch"
-          scramble={0.2}
-          scanlineIntensity={0.15}
-          glitchAmount={1}
-          flickerAmount={0}
-          noiseAmp={1}
+          scramble={0.9}
+          scanlineIntensity={0.25}
+          glitchAmount={0.8}
+          flickerAmount={1}
+          noiseAmp={1.5}
           chromaticAberration={0}
           mouseReact
           pageLoadAnimation
