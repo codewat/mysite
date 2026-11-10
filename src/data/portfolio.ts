@@ -13,6 +13,7 @@ export interface ProjectItem {
   subtitle: string;
   description: string;
   url: string;
+  repoUrl?: string;
   domainLabel: string;
   platform: HostingPlatform;
   category: ProjectCategory;
@@ -34,31 +35,33 @@ export interface DeveloperProfile {
   headline: string;
   bio: string;
   email: string;
+  githubUrl: string;
   availability: string;
   skills: { group: string; items: string[] }[];
 }
 
 export const PROFILE: DeveloperProfile = {
   brandName: 'onin.dev',
-  fullName: 'Onin',
-  role: 'Full-Stack Web & PWA Builder',
-  location: 'Philippines',
+  fullName: 'Cemar (Onin)',
+  role: 'Full-Stack Web, PWA & Mobile Developer',
+  location: 'Canada',
   headline: 'Building practical, fast, and offline-ready web apps for real life.',
-  bio: 'I design and ship focused web applications — from church worship songbooks and faith companions to booking portals, media readers, and workout timers — deployed across Firebase, Vercel, and Render.',
+  bio: 'Developer & musician based in Canada — designing and shipping web, PWA, and mobile applications from church worship songbooks and faith companions to booking portals, media readers, and workout timers across Firebase, Vercel, and Render.',
   email: 'oninninoonin@gmail.com',
+  githubUrl: 'https://github.com/codewat',
   availability: 'Open for freelance builds & web app collaborations',
   skills: [
     {
       group: 'Frontend & PWA',
-      items: ['React', 'TypeScript', 'Next.js / Vite', 'Tailwind CSS', 'Offline-First IndexedDB', 'Service Workers'],
+      items: ['React', 'TypeScript', 'Next.js / Vite', 'Tailwind CSS', 'Angular', 'Offline-First IndexedDB'],
     },
     {
-      group: 'Backend & Cloud',
-      items: ['Firebase Firestore', 'Firebase Hosting', 'Vercel', 'Render', 'REST & Realtime Sync'],
+      group: 'Mobile & Cloud',
+      items: ['Kotlin (Android)', 'Swift (iOS)', 'Firebase Firestore', 'Firebase Hosting', 'Vercel', 'Render'],
     },
     {
       group: 'Product Focus',
-      items: ['Mobile-First UX', 'Church & Community Tools', 'Booking & Business Sites', 'Interactive Media Apps'],
+      items: ['Mobile-First UX', 'Church & Worship Tools', 'Booking & Business Sites', 'Interactive Media Apps'],
     },
   ],
 };
@@ -71,6 +74,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'Built for church worship teams to store PDF chord charts and lyric images directly on their devices for zero-internet stage use, with automatic Firestore cloud sync across bandmates.',
     url: 'https://songbook-70d57.web.app',
+    repoUrl: 'https://github.com/codewat/songbook',
     domainLabel: 'songbook-70d57.web.app',
     platform: 'Firebase',
     category: 'Faith & Ministry',
@@ -94,6 +98,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'A comprehensive Catholic Bible web application featuring all 73 books (Douay-Rheims Version), Holy Rosary, Divine Mercy Chaplet, daily prayers, mood guidance, and Audio Bible.',
     url: 'https://bible-app-five-umber.vercel.app/',
+    repoUrl: 'https://github.com/codewat/bible-app',
     domainLabel: 'bible-app-five-umber.vercel.app',
     platform: 'Vercel',
     category: 'Faith & Ministry',
@@ -115,6 +120,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'Modern clinic website and appointment booking portal for Charlene Agdan RMT, presenting therapeutic massage treatments, wellness services, and easy client scheduling.',
     url: 'https://massage-clinic.vercel.app/',
+    repoUrl: 'https://github.com/codewat/massage_clinic',
     domainLabel: 'massage-clinic.vercel.app',
     platform: 'Vercel',
     category: 'Business & Wellness',
@@ -136,6 +142,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'Dual-phone karaoke web app hosted on Render: use Phone 1 as the TV/lyrics screen with room QR code and Phone 2 as a remote song search, queue reservation, and player controller.',
     url: 'https://kara-ok.onrender.com',
+    repoUrl: 'https://github.com/codewat/karaoke2',
     domainLabel: 'kara-ok.onrender.com',
     platform: 'Render',
     category: 'Media & Fun',
@@ -158,6 +165,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'Online reader for Manga, Manhwa, and Manhua featuring crisp chapter reading, personal bookmarks, reading history, and cross-device sync.',
     url: 'https://mangaapp-eta.vercel.app/',
+    repoUrl: 'https://github.com/codewat/manga_app',
     domainLabel: 'mangaapp-eta.vercel.app',
     platform: 'Vercel',
     category: 'Media & Fun',
@@ -179,6 +187,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'A fast, distraction-free workout routine builder and interval rest timer designed for smooth gym sessions and consistent set tracking.',
     url: 'https://workout-mocha-zeta.vercel.app/',
+    repoUrl: 'https://github.com/codewat/workout',
     domainLabel: 'workout-mocha-zeta.vercel.app',
     platform: 'Vercel',
     category: 'Health & Fitness',
@@ -200,6 +209,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'Custom event celebration website for Charlene and Onin featuring interactive invitation details, guest RSVP management, and Amazon Baby Registry links.',
     url: 'https://babyshower-iota-lime.vercel.app/',
+    repoUrl: 'https://github.com/codewat/babyshower',
     domainLabel: 'babyshower-iota-lime.vercel.app',
     platform: 'Vercel',
     category: 'Events & Personal',

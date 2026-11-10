@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROJECTS } from '../src/data/portfolio';
+import { PROFILE, PROJECTS } from '../src/data/portfolio';
 import { filterProjects } from '../src/utils/filterProjects';
 
 describe('Portfolio Catalog & Filtering', () => {
@@ -24,8 +24,12 @@ describe('Portfolio Catalog & Filtering', () => {
     const uniqueIds = new Set(PROJECTS.map((p) => p.id));
     expect(uniqueIds.size).toBe(PROJECTS.length);
 
+    expect(PROFILE.location).toBe('Canada');
+    expect(PROFILE.githubUrl).toBe('https://github.com/codewat');
+
     for (const p of PROJECTS) {
       expect(p.url.startsWith('https://')).toBe(true);
+      expect(p.repoUrl?.startsWith('https://github.com/codewat/')).toBe(true);
       expect(p.title.length).toBeGreaterThan(2);
       expect(p.highlights.length).toBeGreaterThanOrEqual(2);
       expect(p.previewImage).toMatch(/^\/previews\/[a-z0-9-]+\.png$/);

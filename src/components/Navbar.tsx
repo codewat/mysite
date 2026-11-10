@@ -1,4 +1,4 @@
-import { Code2, Moon, Sun } from 'lucide-react';
+import { Code2, Github, Moon, Sun } from 'lucide-react';
 import { PROFILE } from '../data/portfolio';
 
 interface NavbarProps {
@@ -66,6 +66,21 @@ export function Navbar({ darkMode, onToggleTheme }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <a
+            href={PROFILE.githubUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub profile"
+            title="github.com/codewat"
+            className={`rounded-xl border p-2 transition ${
+              darkMode
+                ? 'border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'
+                : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Github className="h-4 w-4" />
+          </a>
+
           <button
             type="button"
             onClick={onToggleTheme}

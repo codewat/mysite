@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   Check,
   Copy,
+  Github,
   Layers,
   Mail,
   MapPin,
@@ -119,6 +120,19 @@ export function App() {
                 >
                   <Layers className="h-4 w-4" />
                   View All {PROJECTS.length} Live Apps
+                </a>
+                <a
+                  href={PROFILE.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition ${
+                    darkMode
+                      ? 'border-slate-700 bg-slate-900 text-white hover:bg-slate-800'
+                      : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub (@codewat)
                 </a>
                 <a
                   href="#contact"
@@ -470,6 +484,18 @@ export function App() {
                 <span className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
                   {PROFILE.location}
                 </span>
+              </div>
+
+              <div>
+                <a
+                  href={PROFILE.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 font-mono text-sm font-medium text-sky-400 hover:underline"
+                >
+                  <Github className="h-4 w-4" />
+                  github.com/codewat
+                </a>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">

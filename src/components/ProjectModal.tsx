@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Github,
   Image as ImageIcon,
   Maximize2,
   Monitor,
@@ -66,6 +67,17 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {project.repoUrl && (
+              <a
+                href={project.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-slate-950/60 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 hover:text-white"
+              >
+                <Github className="h-4 w-4" />
+                Source
+              </a>
+            )}
             <a
               href={project.url}
               target="_blank"

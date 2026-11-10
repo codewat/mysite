@@ -1,4 +1,4 @@
-import { ArrowUpRight, Clock, Eye, Globe, Maximize2 } from 'lucide-react';
+import { ArrowUpRight, Clock, Eye, Github, Globe, Maximize2 } from 'lucide-react';
 import type { ProjectItem } from '../data/portfolio';
 import { ProjectIcon } from './ProjectIcon';
 
@@ -178,15 +178,33 @@ export function ProjectCard({ project, darkMode, onInspect }: ProjectCardProps) 
             Details &amp; Preview
           </button>
 
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-sky-400"
-          >
-            Open Live
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </a>
+          <div className="flex items-center gap-1.5">
+            {project.repoUrl && (
+              <a
+                href={project.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${project.title} GitHub repository`}
+                title="View source code on GitHub"
+                className={`inline-flex items-center justify-center rounded-xl border p-2 transition ${
+                  darkMode
+                    ? 'border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <Github className="h-3.5 w-3.5" />
+              </a>
+            )}
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-sky-400"
+            >
+              Open Live
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+          </div>
         </div>
       </div>
     </article>
