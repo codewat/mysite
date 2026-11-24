@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILE, PROJECTS } from '../src/data/portfolio';
 import { filterProjects } from '../src/utils/filterProjects';
+import { mergeLaunches } from '../src/utils/mergeLaunches';
 
 describe('Portfolio Catalog & Filtering', () => {
   it('contains all 7 requested live apps with unique IDs and valid HTTPS URLs', () => {
@@ -77,5 +78,63 @@ describe('Portfolio Catalog & Filtering', () => {
     });
     expect(searchWorkout).toHaveLength(1);
     expect(searchWorkout[0].id).toBe('workoutwork-timer');
+  });
+
+  it('merges live Vercel and Render launches and promotes the newest launch', () => {
+    const merged = mergeLaunches(
+      PROJECTS,
+      [
+        {
+          id: 'prj_mysite',
+          name: 'mysite',
+          url: 'https://mysite-codewat.vercel.app',
+          platform: 'Vercel',
+          createdAt: '2026-12-01T00:00:00.000Z',
+        },
+        {
+          id: 'prj_existing_bible',
+          name: 'bible-app',
+          url: 'https://bible-app-five-umber.vercel.app/',
+          platform: 'Vercel',
+          createdAt: '2026-09-01T00:00:00.000Z',
+          repoUrl: 'https://github.com/codewat/bible-app',
+        },
+        {
+          id: 'srv_render_new',
+          name: 'budget-buddy',
+          url: 'https://budget-buddy.onrender.com',
+          platform: 'Render',
+          createdAt: '2026-11-20T10:00:00.000Z',
+          coldStartNote: 'Hosted on Render free tier — first visit may take ~20 seconds to wake up.',
+        },
+        {
+          id: 'prj_vercel_newest',
+          name: 'choir-scheduler',
+          url: 'https://choir-scheduler.vercel.app',
+          platform: 'Vercel',
+          createdAt: '2026-11-24T12:00:00.000Z',
+          framework: 'vite',
+          title: 'Choir Scheduler',
+        },
+      ],
+      ['scratch-demo']
+    );
+
+    // Excludes `mysite` and does not duplicate curated `bible-app`.
+    expect(merged).toHaveLength(PROJECTS.length + 2);
+    expect(merged.some((p) => p.domainLabel.includes('mysite'))).toBe(false);
+
+    // Newest launch becomes featured and placed first; WorshipDeck is unfeatured.
+    const featured = merged.filter((p) => p.featured);
+    expect(featured).toHaveLength(1);
+    expect(featured[0].title).toBe('Choir Scheduler');
+    expect(featured[0].platform).toBe('Vercel');
+    expect(featured[0].category).toBe('Recent Launch');
+    expect(merged[0].title).toBe('Choir Scheduler');
+    expect(merged[1].title).toBe('Budget Buddy');
+    expect(merged[1].platform).toBe('Render');
+    expect(
+      merged.find((p) => p.id === 'worshipdeck-songbook')?.featured
+    ).toBe(false);
   });
 });

@@ -4,6 +4,7 @@ import {
   Heart,
   Mic,
   Music2,
+  Rocket,
   Sparkles,
   Flower2,
 } from 'lucide-react';
@@ -31,5 +32,7 @@ export function ProjectIcon({
       return <Dumbbell className={className} />;
     case 'heart':
       return <Heart className={className} />;
+    case 'rocket':
+      return <Rocket className={className} />;
   }
 }

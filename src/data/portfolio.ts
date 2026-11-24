@@ -5,7 +5,8 @@ export type ProjectCategory =
   | 'Media & Fun'
   | 'Business & Wellness'
   | 'Health & Fitness'
-  | 'Events & Personal';
+  | 'Events & Personal'
+  | 'Recent Launch';
 
 export interface ProjectItem {
   id: string;
@@ -19,12 +20,14 @@ export interface ProjectItem {
   category: ProjectCategory;
   previewImage: string;
   featured?: boolean;
+  createdAt?: string;
+  isAutoSynced?: boolean;
   coldStartNote?: string;
   highlights: string[];
   techStack: string[];
   accentGradient: string;
   badgeColor: string;
-  iconKey: 'music' | 'mic' | 'spa' | 'book' | 'sparkles' | 'dumbbell' | 'heart';
+  iconKey: 'music' | 'mic' | 'spa' | 'book' | 'sparkles' | 'dumbbell' | 'heart' | 'rocket';
 }
 
 export interface DeveloperProfile {
@@ -80,6 +83,7 @@ export const PROJECTS: ProjectItem[] = [
     category: 'Faith & Ministry',
     previewImage: '/previews/worshipdeck-songbook.png',
     featured: true,
+    createdAt: '2026-11-10T00:00:00.000Z',
     highlights: [
       'Default 1. Chords and 2. Lyrics folders plus custom folders & Sunday setlist playlists',
       'True offline PDF & image storage in IndexedDB with built-in PDF.js canvas viewer',

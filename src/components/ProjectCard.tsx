@@ -1,5 +1,6 @@
 import { ArrowUpRight, Clock, Eye, Github, Globe, Maximize2 } from 'lucide-react';
 import type { ProjectItem } from '../data/portfolio';
+import { PreviewImage } from './PreviewImage';
 import { ProjectIcon } from './ProjectIcon';
 
 interface ProjectCardProps {
@@ -60,11 +61,9 @@ export function ProjectCard({ project, darkMode, onInspect }: ProjectCardProps) 
 
         {/* Real App Screenshot */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
-          <img
-            src={project.previewImage}
+          <PreviewImage
+            project={project}
             alt={`${project.title} live app preview`}
-            loading="lazy"
-            decoding="async"
             className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.03]"
           />
 

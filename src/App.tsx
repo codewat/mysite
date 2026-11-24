@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowUpRight,
   Check,
@@ -21,6 +21,7 @@ import {
 } from './data/portfolio';
 import { filterProjects } from './utils/filterProjects';
 import { Navbar } from './components/Navbar';
+import { PreviewImage } from './components/PreviewImage';
 import { ProjectCard } from './components/ProjectCard';
 import { ProjectModal } from './components/ProjectModal';
 import FaultyTerminal from './components/FaultyTerminal';
@@ -32,7 +33,7 @@ const PLATFORM_FILTERS: Array<HostingPlatform | 'All'> = [
   'Render',
 ];
 
-const CATEGORY_FILTERS: Array<ProjectCategory | 'All'> = [
+const BASE_CATEGORY_FILTERS: Array<ProjectCategory | 'All'> = [
   'All',
   'Faith & Ministry',
   'Business & Wellness',
@@ -43,6 +44,7 @@ const CATEGORY_FILTERS: Array<ProjectCategory | 'All'> = [
 
 export function App() {
   const [darkMode, setDarkMode] = useState(true);
+  const [projects, setProjects] = useState<ProjectItem[]>(PROJECTS);
   const [search, setSearch] = useState('');
   const [platform, setPlatform] = useState<HostingPlatform | 'All'>('All');
   const [category, setCategory] = useState<ProjectCategory | 'All'>('All');
@@ -52,11 +54,40 @@ export function App() {
   const [msgName, setMsgName] = useState('');
   const [msgText, setMsgText] = useState('');
 
-  const featuredProject = PROJECTS.find((p) => p.featured) || PROJECTS[0];
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function syncLiveLaunches() {
+      try {
+        const res = await fetch('/api/projects', { signal: controller.signal });
+        if (!res.ok) return;
+        const data = (await res.json()) as { projects?: ProjectItem[] };
+        if (Array.isArray(data.projects) && data.projects.length > 0) {
+          setProjects(data.projects);
+        }
+      } catch {
+        // Fallback silently to bundled PROJECTS when running offline or via static Vite dev server.
+      }
+    }
+
+    syncLiveLaunches();
+    return () => controller.abort();
+  }, []);
+
+  const categoryFilters = useMemo(() => {
+    const hasRecentLaunches = projects.some((p) => p.category === 'Recent Launch');
+    return hasRecentLaunches
+      ? (['All', 'Recent Launch', ...BASE_CATEGORY_FILTERS.slice(1)] as Array<
+          ProjectCategory | 'All'
+        >)
+      : BASE_CATEGORY_FILTERS;
+  }, [projects]);
+
+  const featuredProject = projects.find((p) => p.featured) || projects[0];
 
   const visibleProjects = useMemo(
-    () => filterProjects(PROJECTS, { search, platform, category }),
-    [search, platform, category]
+    () => filterProjects(projects, { search, platform, category }),
+    [projects, search, platform, category]
   );
 
   const handleCopyEmail = async () => {
@@ -149,7 +180,7 @@ export function App() {
                   className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
                 >
                   <Layers className="h-4 w-4" />
-                  View All {PROJECTS.length} Live Apps
+                  View All {projects.length} Live Apps
                 </a>
                 <a
                   href={PROFILE.githubUrl}
@@ -185,7 +216,7 @@ export function App() {
                       darkMode ? 'text-white' : 'text-slate-950'
                     }`}
                   >
-                    {PROJECTS.length}
+                    {projects.length}
                   </p>
                   <p className="text-xs text-slate-400">Live Deployed Apps</p>
                 </div>
@@ -237,9 +268,10 @@ export function App() {
                   className="group relative mt-4 block w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-left shadow-lg"
                 >
                   <div className="aspect-[16/10] w-full overflow-hidden">
-                    <img
-                      src={featuredProject.previewImage}
+                    <PreviewImage
+                      project={featuredProject}
                       alt={`${featuredProject.title} live UI preview`}
+                      loading="eager"
                       className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
@@ -342,7 +374,7 @@ export function App() {
         {/* Filter Controls */}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-1.5">
-            {CATEGORY_FILTERS.map((cat) => (
+            {categoryFilters.map((cat) => (
               <button
                 key={cat}
                 type="button"

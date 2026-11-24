@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import type { ProjectItem } from '../data/portfolio';
+import { PreviewImage } from './PreviewImage';
 import { ProjectIcon } from './ProjectIcon';
 
 interface ProjectModalProps {
@@ -161,9 +162,10 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                     </span>
                   </div>
                   <div className="aspect-[16/10] w-full overflow-hidden">
-                    <img
-                      src={project.previewImage}
+                    <PreviewImage
+                      project={project}
                       alt={`${project.title} screenshot`}
+                      loading="eager"
                       className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
                     />
                   </div>
@@ -238,9 +240,10 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                   Open Live Site <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
-              <img
-                src={project.previewImage}
+              <PreviewImage
+                project={project}
                 alt={`${project.title} full UI screenshot`}
+                loading="eager"
                 className="w-full object-contain"
               />
             </div>
