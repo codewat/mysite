@@ -11,6 +11,15 @@ declare const process: {
   env: Record<string, string | undefined>;
 };
 
+interface VercelDeploymentSummary {
+  target?: string | null;
+  readyState?: string;
+  state?: string;
+  alias?: string[];
+  url?: string;
+  createdAt?: number;
+}
+
 interface VercelProjectResponse {
   id: string;
   name: string;
@@ -22,13 +31,7 @@ interface VercelProjectResponse {
       url?: string;
     };
   };
-  latestDeployments?: Array<{
-    target?: string;
-    readyState?: string;
-    alias?: string[];
-    url?: string;
-    createdAt?: number;
-  }>;
+  latestDeployments?: VercelDeploymentSummary[];
   link?: {
     type?: string;
     org?: string;
@@ -44,6 +47,7 @@ interface RenderServiceResponse {
     repo?: string;
     createdAt?: string;
     suspended?: string;
+    url?: string;
     serviceDetails?: {
       url?: string;
       env?: string;
@@ -52,16 +56,25 @@ interface RenderServiceResponse {
   };
 }
 
-function pickVercelProductionUrl(project: VercelProjectResponse): string | null {
+function isDeploymentReady(d: VercelDeploymentSummary): boolean {
+  const status = d.readyState || d.state;
+  return status === 'READY';
+}
+
+function pickVercelLiveUrl(project: VercelProjectResponse): string | null {
   const prodTargetAliases = project.targets?.production?.alias ?? [];
   const latestReadyProd = project.latestDeployments?.find(
-    (d) => d.target === 'production' && d.readyState === 'READY'
+    (d) => d.target === 'production' && isDeploymentReady(d)
   );
+  const latestAnyReady = project.latestDeployments?.find((d) => isDeploymentReady(d));
+
   const candidates = [
     ...prodTargetAliases,
     ...(latestReadyProd?.alias ?? []),
     project.targets?.production?.url,
     latestReadyProd?.url,
+    ...(latestAnyReady?.alias ?? []),
+    latestAnyReady?.url,
   ].filter((value): value is string => Boolean(value));
 
   if (candidates.length === 0) return null;
@@ -82,12 +95,10 @@ function buildGithubUrl(link?: VercelProjectResponse['link']): string | undefine
   return undefined;
 }
 
-async function fetchVercelLaunches(
-  token?: string,
+async function fetchVercelProjectsForScope(
+  token: string,
   teamId?: string
-): Promise<RemoteLaunch[]> {
-  if (!token) return [];
-
+): Promise<VercelProjectResponse[]> {
   const params = new URLSearchParams({ limit: '100' });
   if (teamId) params.set('teamId', teamId);
 
@@ -99,15 +110,81 @@ async function fetchVercelLaunches(
   });
 
   if (!res.ok) {
-    throw new Error(`Vercel API error: ${res.status}`);
+    throw new Error(`Vercel API error (${res.status}) for scope ${teamId || 'personal'}`);
   }
 
   const data = (await res.json()) as { projects?: VercelProjectResponse[] };
-  const launches: RemoteLaunch[] = [];
+  return data.projects ?? [];
+}
 
-  for (const project of data.projects ?? []) {
-    const url = pickVercelProductionUrl(project);
-    if (!url || !project.createdAt) continue;
+async function fetchAccessibleVercelTeamIds(token: string): Promise<string[]> {
+  try {
+    const res = await fetch('https://api.vercel.com/v2/teams?limit=20', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { teams?: Array<{ id?: string }> };
+    return (data.teams ?? []).map((t) => t.id).filter((id): id is string => Boolean(id));
+  } catch {
+    return [];
+  }
+}
+
+async function fetchVercelLaunches(
+  token?: string,
+  configuredTeamId?: string
+): Promise<{ launches: RemoteLaunch[]; skipped: string[] }> {
+  if (!token) return { launches: [], skipped: [] };
+
+  const teamIds = new Set<string>();
+  if (configuredTeamId) teamIds.add(configuredTeamId);
+
+  const discoveredTeams = await fetchAccessibleVercelTeamIds(token);
+  for (const id of discoveredTeams) {
+    teamIds.add(id);
+  }
+
+  // Query personal scope (undefined) + all accessible teams in parallel.
+  const scopeList: Array<string | undefined> = [undefined, ...teamIds];
+  const scopeResults = await Promise.allSettled(
+    scopeList.map((scopeId) => fetchVercelProjectsForScope(token, scopeId))
+  );
+
+  const seenProjectIds = new Set<string>();
+  const allProjects: VercelProjectResponse[] = [];
+  let anySucceeded = false;
+  let lastError: unknown = null;
+
+  for (const result of scopeResults) {
+    if (result.status === 'fulfilled') {
+      anySucceeded = true;
+      for (const project of result.value) {
+        if (!seenProjectIds.has(project.id)) {
+          seenProjectIds.add(project.id);
+          allProjects.push(project);
+        }
+      }
+    } else {
+      lastError = result.reason;
+    }
+  }
+
+  if (!anySucceeded && lastError) {
+    throw lastError;
+  }
+
+  const launches: RemoteLaunch[] = [];
+  const skipped: string[] = [];
+
+  for (const project of allProjects) {
+    const url = pickVercelLiveUrl(project);
+    if (!url || !project.createdAt) {
+      skipped.push(project.name);
+      continue;
+    }
 
     launches.push({
       id: project.id,
@@ -120,13 +197,15 @@ async function fetchVercelLaunches(
     });
   }
 
-  return launches;
+  return { launches, skipped };
 }
 
-async function fetchRenderLaunches(apiKey?: string): Promise<RemoteLaunch[]> {
-  if (!apiKey) return [];
+async function fetchRenderLaunches(
+  apiKey?: string
+): Promise<{ launches: RemoteLaunch[]; skipped: string[] }> {
+  if (!apiKey) return { launches: [], skipped: [] };
 
-  const res = await fetch('https://api.render.com/v1/services?limit=50', {
+  const res = await fetch('https://api.render.com/v1/services?limit=100', {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       Accept: 'application/json',
@@ -140,12 +219,20 @@ async function fetchRenderLaunches(apiKey?: string): Promise<RemoteLaunch[]> {
 
   const items = (await res.json()) as RenderServiceResponse[];
   const launches: RemoteLaunch[] = [];
+  const skipped: string[] = [];
 
   for (const entry of items) {
     const service = entry.service;
-    if (!service || service.suspended === 'suspended') continue;
-    const url = service.serviceDetails?.url;
-    if (!url || !url.startsWith('https://')) continue;
+    if (!service) continue;
+    if (service.suspended === 'suspended') {
+      skipped.push(`${service.name} (suspended)`);
+      continue;
+    }
+    const url = service.serviceDetails?.url || service.url;
+    if (!url || !url.startsWith('https://')) {
+      skipped.push(`${service.name} (no public URL)`);
+      continue;
+    }
 
     const isFree = service.serviceDetails?.plan === 'free';
     launches.push({
@@ -155,14 +242,14 @@ async function fetchRenderLaunches(apiKey?: string): Promise<RemoteLaunch[]> {
       platform: 'Render',
       createdAt: service.createdAt || new Date().toISOString(),
       repoUrl: service.repo || undefined,
-      framework: service.serviceDetails?.env || undefined,
+      framework: service.serviceDetails?.env || service.type || undefined,
       coldStartNote: isFree
         ? 'Hosted on Render free tier — first visit may take ~20 seconds to wake up.'
         : undefined,
     });
   }
 
-  return launches;
+  return { launches, skipped };
 }
 
 function decodeHtmlEntities(text: string): string {
@@ -251,10 +338,10 @@ async function enrichNewLaunch(launch: RemoteLaunch): Promise<RemoteLaunch> {
   }
 }
 
-export async function GET(): Promise<Response> {
-  const vercelToken = process.env.VERCEL_TOKEN;
-  const vercelTeamId = process.env.VERCEL_TEAM_ID;
-  const renderApiKey = process.env.RENDER_API_KEY;
+export async function GET(request: Request): Promise<Response> {
+  const vercelToken = process.env.VERCEL_TOKEN?.trim();
+  const vercelTeamId = process.env.VERCEL_TEAM_ID?.trim();
+  const renderApiKey = process.env.RENDER_API_KEY?.trim();
   const excludedNames = (process.env.EXCLUDED_PROJECTS || '')
     .split(',')
     .map((s) => s.trim())
@@ -266,6 +353,12 @@ export async function GET(): Promise<Response> {
   };
 
   const remoteLaunches: RemoteLaunch[] = [];
+  let vercelCount = 0;
+  let renderCount = 0;
+  let vercelError: string | null = null;
+  let renderError: string | null = null;
+  let skippedVercelProjects: string[] = [];
+  let skippedRenderServices: string[] = [];
 
   const [vercelResult, renderResult] = await Promise.allSettled([
     fetchVercelLaunches(vercelToken, vercelTeamId),
@@ -273,14 +366,26 @@ export async function GET(): Promise<Response> {
   ]);
 
   if (vercelResult.status === 'fulfilled') {
-    remoteLaunches.push(...vercelResult.value);
+    vercelCount = vercelResult.value.launches.length;
+    skippedVercelProjects = vercelResult.value.skipped;
+    remoteLaunches.push(...vercelResult.value.launches);
   } else {
+    vercelError =
+      vercelResult.reason instanceof Error
+        ? vercelResult.reason.message
+        : String(vercelResult.reason);
     console.error('Failed to fetch Vercel projects:', vercelResult.reason);
   }
 
   if (renderResult.status === 'fulfilled') {
-    remoteLaunches.push(...renderResult.value);
+    renderCount = renderResult.value.launches.length;
+    skippedRenderServices = renderResult.value.skipped;
+    remoteLaunches.push(...renderResult.value.launches);
   } else {
+    renderError =
+      renderResult.reason instanceof Error
+        ? renderResult.reason.message
+        : String(renderResult.reason);
     console.error('Failed to fetch Render services:', renderResult.reason);
   }
 
@@ -314,16 +419,27 @@ export async function GET(): Promise<Response> {
   );
 
   const projects = mergeLaunches(PROJECTS, enrichedLaunches, excludedNames);
+  const forceFresh = new URL(request.url).searchParams.get('fresh') === '1';
 
   return Response.json(
     {
       projects,
       sources,
+      diagnostics: {
+        vercelCount,
+        renderCount,
+        vercelError,
+        renderError,
+        skippedVercelProjects,
+        skippedRenderServices,
+      },
       syncedAt: new Date().toISOString(),
     },
     {
       headers: {
-        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+        'Cache-Control': forceFresh
+          ? 'no-store'
+          : 'public, s-maxage=15, stale-while-revalidate=30',
       },
     }
   );

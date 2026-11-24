@@ -61,7 +61,19 @@ export function App() {
       try {
         const res = await fetch('/api/projects', { signal: controller.signal });
         if (!res.ok) return;
-        const data = (await res.json()) as { projects?: ProjectItem[] };
+        const data = (await res.json()) as {
+          projects?: ProjectItem[];
+          diagnostics?: {
+            vercelError?: string | null;
+            renderError?: string | null;
+          };
+        };
+        if (data.diagnostics?.vercelError) {
+          console.warn('Vercel sync warning:', data.diagnostics.vercelError);
+        }
+        if (data.diagnostics?.renderError) {
+          console.warn('Render sync warning:', data.diagnostics.renderError);
+        }
         if (Array.isArray(data.projects) && data.projects.length > 0) {
           setProjects(data.projects);
         }
