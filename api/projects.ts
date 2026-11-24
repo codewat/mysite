@@ -1,11 +1,11 @@
-import { PROJECTS } from '../src/data/portfolio';
+import { PROJECTS } from '../src/data/portfolio.js';
 import {
   formatProjectTitle,
   mergeLaunches,
   normalizeDomain,
   normalizeRepo,
   type RemoteLaunch,
-} from '../src/utils/mergeLaunches';
+} from '../src/utils/mergeLaunches.js';
 
 declare const process: {
   env: Record<string, string | undefined>;
@@ -339,108 +339,122 @@ async function enrichNewLaunch(launch: RemoteLaunch): Promise<RemoteLaunch> {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const vercelToken = process.env.VERCEL_TOKEN?.trim();
-  const vercelTeamId = process.env.VERCEL_TEAM_ID?.trim();
-  const renderApiKey = process.env.RENDER_API_KEY?.trim();
-  const excludedNames = (process.env.EXCLUDED_PROJECTS || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+  try {
+    const vercelToken = process.env.VERCEL_TOKEN?.trim();
+    const vercelTeamId = process.env.VERCEL_TEAM_ID?.trim();
+    const renderApiKey = process.env.RENDER_API_KEY?.trim();
+    const excludedNames = (process.env.EXCLUDED_PROJECTS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
 
-  const sources = {
-    vercel: Boolean(vercelToken),
-    render: Boolean(renderApiKey),
-  };
+    const sources = {
+      vercel: Boolean(vercelToken),
+      render: Boolean(renderApiKey),
+    };
 
-  const remoteLaunches: RemoteLaunch[] = [];
-  let vercelCount = 0;
-  let renderCount = 0;
-  let vercelError: string | null = null;
-  let renderError: string | null = null;
-  let skippedVercelProjects: string[] = [];
-  let skippedRenderServices: string[] = [];
+    const remoteLaunches: RemoteLaunch[] = [];
+    let vercelCount = 0;
+    let renderCount = 0;
+    let vercelError: string | null = null;
+    let renderError: string | null = null;
+    let skippedVercelProjects: string[] = [];
+    let skippedRenderServices: string[] = [];
 
-  const [vercelResult, renderResult] = await Promise.allSettled([
-    fetchVercelLaunches(vercelToken, vercelTeamId),
-    fetchRenderLaunches(renderApiKey),
-  ]);
+    const [vercelResult, renderResult] = await Promise.allSettled([
+      fetchVercelLaunches(vercelToken, vercelTeamId),
+      fetchRenderLaunches(renderApiKey),
+    ]);
 
-  if (vercelResult.status === 'fulfilled') {
-    vercelCount = vercelResult.value.launches.length;
-    skippedVercelProjects = vercelResult.value.skipped;
-    remoteLaunches.push(...vercelResult.value.launches);
-  } else {
-    vercelError =
-      vercelResult.reason instanceof Error
-        ? vercelResult.reason.message
-        : String(vercelResult.reason);
-    console.error('Failed to fetch Vercel projects:', vercelResult.reason);
-  }
-
-  if (renderResult.status === 'fulfilled') {
-    renderCount = renderResult.value.launches.length;
-    skippedRenderServices = renderResult.value.skipped;
-    remoteLaunches.push(...renderResult.value.launches);
-  } else {
-    renderError =
-      renderResult.reason instanceof Error
-        ? renderResult.reason.message
-        : String(renderResult.reason);
-    console.error('Failed to fetch Render services:', renderResult.reason);
-  }
-
-  // Enrich only newly discovered apps (skip curated projects and excluded names).
-  const curatedDomains = new Set(PROJECTS.map((p) => normalizeDomain(p.url)));
-  const curatedRepos = new Set(
-    PROJECTS.map((p) => normalizeRepo(p.repoUrl)).filter(Boolean)
-  );
-  const exclusionSet = new Set([
-    'mysite',
-    'mysite-portfolio',
-    ...excludedNames.map((n) => n.toLowerCase()),
-  ]);
-
-  const enrichedLaunches = await Promise.all(
-    remoteLaunches.map((launch) => {
-      const domain = normalizeDomain(launch.url);
-      const repo = normalizeRepo(launch.repoUrl);
-      const isExcluded =
-        exclusionSet.has(launch.name.toLowerCase()) || exclusionSet.has(domain);
-      const isAlreadyCurated =
-        curatedDomains.has(domain) ||
-        (repo && curatedRepos.has(repo)) ||
-        PROJECTS.some((p) => p.id.toLowerCase() === launch.name.toLowerCase());
-
-      if (isExcluded || isAlreadyCurated) {
-        return Promise.resolve(launch);
-      }
-      return enrichNewLaunch(launch);
-    })
-  );
-
-  const projects = mergeLaunches(PROJECTS, enrichedLaunches, excludedNames);
-  const forceFresh = new URL(request.url).searchParams.get('fresh') === '1';
-
-  return Response.json(
-    {
-      projects,
-      sources,
-      diagnostics: {
-        vercelCount,
-        renderCount,
-        vercelError,
-        renderError,
-        skippedVercelProjects,
-        skippedRenderServices,
-      },
-      syncedAt: new Date().toISOString(),
-    },
-    {
-      headers: {
-        'Cache-Control': forceFresh
-          ? 'no-store'
-          : 'public, s-maxage=15, stale-while-revalidate=30',
-      },
+    if (vercelResult.status === 'fulfilled') {
+      vercelCount = vercelResult.value.launches.length;
+      skippedVercelProjects = vercelResult.value.skipped;
+      remoteLaunches.push(...vercelResult.value.launches);
+    } else {
+      vercelError =
+        vercelResult.reason instanceof Error
+          ? vercelResult.reason.message
+          : String(vercelResult.reason);
+      console.error('Failed to fetch Vercel projects:', vercelResult.reason);
     }
-  );
+
+    if (renderResult.status === 'fulfilled') {
+      renderCount = renderResult.value.launches.length;
+      skippedRenderServices = renderResult.value.skipped;
+      remoteLaunches.push(...renderResult.value.launches);
+    } else {
+      renderError =
+        renderResult.reason instanceof Error
+          ? renderResult.reason.message
+          : String(renderResult.reason);
+      console.error('Failed to fetch Render services:', renderResult.reason);
+    }
+
+    // Enrich only newly discovered apps (skip curated projects and excluded names).
+    const curatedDomains = new Set(PROJECTS.map((p) => normalizeDomain(p.url)));
+    const curatedRepos = new Set(
+      PROJECTS.map((p) => normalizeRepo(p.repoUrl)).filter(Boolean)
+    );
+    const exclusionSet = new Set([
+      'mysite',
+      'mysite-portfolio',
+      ...excludedNames.map((n) => n.toLowerCase()),
+    ]);
+
+    const enrichedLaunches = await Promise.all(
+      remoteLaunches.map((launch) => {
+        const domain = normalizeDomain(launch.url);
+        const repo = normalizeRepo(launch.repoUrl);
+        const isExcluded =
+          exclusionSet.has(launch.name.toLowerCase()) || exclusionSet.has(domain);
+        const isAlreadyCurated =
+          curatedDomains.has(domain) ||
+          (repo && curatedRepos.has(repo)) ||
+          PROJECTS.some((p) => p.id.toLowerCase() === launch.name.toLowerCase());
+
+        if (isExcluded || isAlreadyCurated) {
+          return Promise.resolve(launch);
+        }
+        return enrichNewLaunch(launch);
+      })
+    );
+
+    const projects = mergeLaunches(PROJECTS, enrichedLaunches, excludedNames);
+    const forceFresh =
+      new URL(request.url, 'https://localhost').searchParams.get('fresh') === '1';
+
+    return Response.json(
+      {
+        projects,
+        sources,
+        diagnostics: {
+          vercelCount,
+          renderCount,
+          vercelError,
+          renderError,
+          skippedVercelProjects,
+          skippedRenderServices,
+        },
+        syncedAt: new Date().toISOString(),
+      },
+      {
+        headers: {
+          'Cache-Control': forceFresh
+            ? 'no-store'
+            : 'public, s-maxage=15, stale-while-revalidate=30',
+        },
+      }
+    );
+  } catch (err) {
+    console.error('Unhandled error in /api/projects:', err);
+    const message = err instanceof Error ? err.message : String(err);
+    return Response.json(
+      {
+        projects: PROJECTS,
+        error: message,
+        syncedAt: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }
 }

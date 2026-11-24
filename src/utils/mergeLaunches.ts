@@ -1,4 +1,4 @@
-import type { HostingPlatform, ProjectItem } from '../data/portfolio';
+import type { HostingPlatform, ProjectItem } from '../data/portfolio.js';
 
 export interface RemoteLaunch {
   id: string;
