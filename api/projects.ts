@@ -133,11 +133,21 @@ async function fetchAccessibleVercelTeamIds(token: string): Promise<string[]> {
   }
 }
 
+interface VercelScopeDiagnostic {
+  scope: string;
+  count: number;
+  error: string | null;
+}
+
 async function fetchVercelLaunches(
   token?: string,
   configuredTeamId?: string
-): Promise<{ launches: RemoteLaunch[]; skipped: string[] }> {
-  if (!token) return { launches: [], skipped: [] };
+): Promise<{
+  launches: RemoteLaunch[];
+  skipped: string[];
+  scopeDiagnostics: VercelScopeDiagnostic[];
+}> {
+  if (!token) return { launches: [], skipped: [], scopeDiagnostics: [] };
 
   const teamIds = new Set<string>();
   if (configuredTeamId) teamIds.add(configuredTeamId);
@@ -155,12 +165,19 @@ async function fetchVercelLaunches(
 
   const seenProjectIds = new Set<string>();
   const allProjects: VercelProjectResponse[] = [];
+  const scopeDiagnostics: VercelScopeDiagnostic[] = [];
   let anySucceeded = false;
   let lastError: unknown = null;
 
-  for (const result of scopeResults) {
+  scopeResults.forEach((result, idx) => {
+    const scopeName = scopeList[idx] || 'personal';
     if (result.status === 'fulfilled') {
       anySucceeded = true;
+      scopeDiagnostics.push({
+        scope: scopeName,
+        count: result.value.length,
+        error: null,
+      });
       for (const project of result.value) {
         if (!seenProjectIds.has(project.id)) {
           seenProjectIds.add(project.id);
@@ -168,9 +185,16 @@ async function fetchVercelLaunches(
         }
       }
     } else {
+      const errMsg =
+        result.reason instanceof Error ? result.reason.message : String(result.reason);
       lastError = result.reason;
+      scopeDiagnostics.push({
+        scope: scopeName,
+        count: 0,
+        error: errMsg,
+      });
     }
-  }
+  });
 
   if (!anySucceeded && lastError) {
     throw lastError;
@@ -197,7 +221,7 @@ async function fetchVercelLaunches(
     });
   }
 
-  return { launches, skipped };
+  return { launches, skipped, scopeDiagnostics };
 }
 
 async function fetchRenderLaunches(
@@ -360,6 +384,7 @@ export async function GET(request: Request): Promise<Response> {
     let renderError: string | null = null;
     let skippedVercelProjects: string[] = [];
     let skippedRenderServices: string[] = [];
+    let vercelScopes: VercelScopeDiagnostic[] = [];
 
     const [vercelResult, renderResult] = await Promise.allSettled([
       fetchVercelLaunches(vercelToken, vercelTeamId),
@@ -369,6 +394,7 @@ export async function GET(request: Request): Promise<Response> {
     if (vercelResult.status === 'fulfilled') {
       vercelCount = vercelResult.value.launches.length;
       skippedVercelProjects = vercelResult.value.skipped;
+      vercelScopes = vercelResult.value.scopeDiagnostics;
       remoteLaunches.push(...vercelResult.value.launches);
     } else {
       vercelError =
@@ -432,6 +458,7 @@ export async function GET(request: Request): Promise<Response> {
           renderCount,
           vercelError,
           renderError,
+          vercelScopes,
           skippedVercelProjects,
           skippedRenderServices,
         },
